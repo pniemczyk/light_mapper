@@ -86,4 +86,5 @@ describe LightMapper do
   end
 
   it 'nested keys'
+  it 'value conversion'
 end

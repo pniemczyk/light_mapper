@@ -9,19 +9,18 @@ module LightMapper
     require_keys  = opts[:require_keys]  == true
     any_keys_kind = opts[:any_keys_kind] == true
     fetch_method  = if any_keys_kind
-      if require_keys
-        -> (hash, key) { hash.fetch(key.to_s, hash.fetch(key.to_sym)) }
-      else
-        -> (hash, key) { hash[key.to_s] || hash[key.to_sym] }
-      end
-    else
-      if require_keys
-        -> (hash, key) { hash.fetch(key) }
-      else
-        -> (hash, key) { hash[key] }
-      end
-    end
-
+                      if require_keys
+                        -> (h, k) { h.fetch(k.to_s, h.fetch(k.to_sym)) }
+                      else
+                        -> (h, k) { h[k.to_s] || h[k.to_sym] }
+                      end
+                    else
+                      if require_keys
+                        -> (h, k) { h.fetch(k) }
+                      else
+                        -> (h, k) { h[k] }
+                      end
+                    end
     {}.tap do |h|
       mappings.each { |k, v| h[v] = fetch_method.call(hash, k) }
     end
