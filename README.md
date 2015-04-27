@@ -31,6 +31,16 @@ Or install it yourself as:
   'LastName' => :last_name
 )
 ```
+
+or
+
+```ruby
+LightMapper.mapping(
+  { 'FirstName' => 'Pawel', 'LastName'  => 'Niemczyk' },
+  { 'FirstName' => :first_name, 'LastName' => :last_name }
+)
+```
+
 result is obvious:
 
 ```ruby
