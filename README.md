@@ -1,5 +1,9 @@
 # LightMapper
 
+[![Gem Version](https://badge.fury.io/rb/light_mapper.svg)](http://badge.fury.io/rb/light_mapper)
+[![Build Status](https://travis-ci.org/pniemczyk/light_mapper.svg?branch=0.2.0)](https://travis-ci.org/pniemczyk/light_mapper)
+[![Dependency Status](https://gemnasium.com/pniemczyk/light_mapper.svg)](https://gemnasium.com/pniemczyk/light_mapper)
+
 This is simple mapper for hash.
 
 ## Installation
