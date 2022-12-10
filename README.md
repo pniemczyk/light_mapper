@@ -67,20 +67,16 @@ data = {
 }
 
 data.extend(LightMapper).mapping(PersonMapper)
+# {first_name: 'Pawel', last_name: 'Niemczyk', 'age': 5}
 ```
 
 ### When you require all keys
 
 ```ruby
-{
-  'FirstName' => 'Pawel'
-}.extend(LightMapper, require_keys: true).mapping(
-  'FirstName' => :first_name,
-  'LastName' => :last_name
-)
+{ 'FirstName' => 'Pawel' }.extend(LightMapper).mapping({'FirstName' => :first_name, 'LastName' => :last_name}, strict: true)
 ```
 
-it will raise KeyError
+it will raise LightMapper::KeyMissing: LastName key not found; Full path LastName
 
 ### When you want to pass string or symbol keys
 
@@ -88,16 +84,91 @@ it will raise KeyError
 {
   'FirstName' => 'Pawel',
   second_name: 'Niemczyk'
-}.extend(LightMapper, any_keys_kind: true).mapping(
-  'FirstName' => :first_name,
-  'second_name' => :last_name
-)
+}.extend(LightMapper).mapping({
+                                'FirstName' => :first_name,
+                                'second_name' => :last_name
+                              }, any_keys: true)
 ```
 
 result will be:
 
 ```ruby
 { first_name: 'Pawel', last_name: 'Niemczyk' }
+```
+
+### Support for nested hashes, arrays and objects (now we talking what it is capable of)
+
+```ruby
+{
+  'source' => { 'google' => { 'search_word' => 'ruby' } },
+  'user' => User.new(email: 'pawel@example.com', name: 'Pawel'),
+  'roles' => %w[admin manager user],
+  'mixed' => { users: [User.new(email: 'max@example.com', name: 'Max', manager: true), User.new(email: 'pawel@example.com', name: 'Pawel', manager: false)] },
+  'scores' => [ 10, 2, 5, 1000],
+  'last_4_payments' => [
+    { 'amount' => 100, 'currency' => 'USD' },
+    { 'amount' => 200, 'currency' => 'USD' },
+    { 'amount' => 300, 'currency' => 'USD' },
+    { 'amount' => 400, 'currency' => 'USD' }
+  ],
+  'array' => [
+    [1,2,3],
+    [4,5,6],
+    [
+      7,
+      8,
+      [':D']
+    ],
+  ]
+}.extend(LightMapper).mapping(
+  'source.google.search_word' => :word,
+  'user.email' => :email,
+  'user.as_json.name' => :name,
+  'roles.0' => :first_role,
+  ['roles', 1] => :middle_role,
+  'roles.last' => :last_role,
+  (->(source) { source[:mixed][:users].find { |user| user.manager }.email }) => :manager_email,
+  (->(source) { source[:mixed][:users].find { |user| user.manager }.name }) => :manager_name,
+  'mixed.users.last.name' => :last_user_name,
+  (->(source) { source[:last_4_payments].map(&:values).map(&:first).max }) => :quarterly_payment_amount,
+  'scores.sum' => :final_score,
+  'array.2.2.first' => :smile
+)
+```
+
+result will be:
+
+```ruby
+{ 
+  word: 'ruby', 
+  email: 'pawel@example.com',
+  name: 'Pawel',
+  first_role: 'admin',
+  last_role: 'user',
+  manager_email: 'max@example.com',
+  manager_name: 'Max',
+  last_user_name: 'Pawel',
+  quarterly_payment_amount: 1000,
+  final_score: 1017
+}
+```
+
+### Mappers selection via pattern matching
+
+```ruby
+GOOGLE_MAPPER   = { 'result.user.name' => :name }
+LINKEDIN_MAPPER = { 'result.client.display_name' => :word }
+
+data = { source: 'google', user: { name: 'test'}, 'result' => { 'user' => { 'name' => 'Pawel'} } } 
+mapper = case data
+         in source: 'google', user: {name:} then GOOGLE_MAPPER
+         in source: 'linkedin', client: {display_name:} then LINKEDIN_MAPPER
+         else
+           raise 'Unknown mapper'
+         end
+
+data.extend(LightMapper).mapping(mapper)
+# result { name: 'Pawel' }
 ```
 
 ## Contributing
