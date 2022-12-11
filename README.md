@@ -3,7 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/light_mapper.svg)](https://badge.fury.io/rb/light_mapper)
 [![Build Status](https://travis-ci.org/pniemczyk/light_mapper.svg?branch=master)](https://travis-ci.org/pniemczyk/light_mapper)
 
-This is simple mapper for hash.
+Simple mapper for hash.
 
 ## Installation
 
@@ -89,13 +89,13 @@ it will raise LightMapper::KeyMissing: LastName key not found; Full path LastNam
                               }, any_keys: true)
 ```
 
-result will be:
+the result will be:
 
 ```ruby
 { first_name: 'Pawel', last_name: 'Niemczyk' }
 ```
 
-### Support for nested hashes, arrays and objects (now we talking what it is capable of)
+### Support for nested hashes, arrays, and objects (now we are talking about what it is capable of)
 
 ```ruby
 {
@@ -135,7 +135,7 @@ result will be:
 )
 ```
 
-result will be:
+the result will be:
 
 ```ruby
 { 
@@ -176,7 +176,7 @@ result will be:
 }, keys: :symbol)
 ```
 
-result will be: 
+the result will be: 
 
 ```ruby
 {
@@ -193,7 +193,7 @@ result will be:
 }
 ```
 
-### Support for pushing values to specific key based on key path
+### Support for pushing values to specific key based on the key path
 
 ```ruby
 {a: 1}.extend(LightMapper).push('b.c', 2, keys: :symbol)
