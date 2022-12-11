@@ -1,8 +1,11 @@
 require 'light_mapper/version'
 
 module LightMapper
-  InvalidKey = Class.new(StandardError)
-  KeyMissing = Class.new(StandardError)
+  BaseError = Class.new(StandardError)
+  InvalidKey = Class.new(BaseError)
+  KeyMissing = Class.new(BaseError)
+  InvalidStructure = Class.new(BaseError)
+  AlreadyAssignedValue = Class.new(BaseError)
 
   module Helper
     def self.raise_key_missing(current, full_path, additional_message = nil)
@@ -60,6 +63,47 @@ module LightMapper
         object.public_send(method_name)
       end
     end
+
+    def self.build_structure(mapping)
+      mapping.values.each_with_object({}) do |value, result|
+        nesting = value.to_s.split('.')[0..-2]
+        next result if nesting.empty?
+
+        nesting.each do |key|
+          result[key] ||= {}
+          result = result[key]
+        end
+      end
+    end
+
+    def self.push(hash, key, value, keys: :string, build_structure: true)
+      return hash[key] = value if key.is_a?(Symbol)
+
+      path = key.to_s.split('.')
+      path = path.map(&:to_sym) if keys == :symbol
+
+      context = hash
+      context[path.first] if build_structure && path.size == 2
+
+      path.each_with_index do |k, idx|
+        last_idx = idx == path.size - 1
+        raise AlreadyAssignedValue, "Key #{k} already assigned in #{path} for #{hash.inspect} structure" if last_idx && context.key?(k) && !context[k].nil?
+        next context[k] = value if last_idx
+
+        context.send(:[]=,k, {}) if build_structure && !context.key?(k)
+        context = context.send(:[], k) if context.is_a?(Hash)
+      end
+    end
+
+    def self.compact(hash)
+      hash.each_with_object({}) do |(key, value), result|
+        next if value.empty?
+
+        result[key] = value.is_a?(Hash) ? compact(value) : value
+      end
+    end
+  rescue IndexError
+    raise InvalidStructure, "Invalid key: #{key} for #{hash.inspect} structure"
   end
 
   def mapping(mappings, opts = {})
@@ -67,12 +111,14 @@ module LightMapper
   end
 
   def self.mapping(hash, mappings, opts = {})
-    strict, any_keys = opts.values_at(:strict, :any_keys)
+    strict, any_keys, keys = opts.values_at(:strict, :any_keys, :keys)
+
     mappings.each_with_object({}) do |(k, v), h|
-      next h[v] = k.call(hash) if k.is_a?(Proc)
+      next Helper.push(h, v, k.call(hash), keys: keys) if k.is_a?(Proc)
 
       key_path = Helper.key_destructor(k)
-      h[v] = Helper.value_extractor(hash, key_path.first, key_path[1..-1], key_path, strict, any_keys)
+      value = Helper.value_extractor(hash, key_path.first, key_path[1..-1], key_path, strict, any_keys)
+      Helper.push(h, v, value, keys: keys)
     end
   end
 end

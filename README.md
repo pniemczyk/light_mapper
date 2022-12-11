@@ -152,6 +152,49 @@ result will be:
 }
 ```
 
+### Support for nested output structure and symbolize output keys
+
+```ruby
+{
+  'source' => { 'google' => { 'private_pool' => true } },
+  'user' => User.new(email: 'pawel@example.com', name: 'Pawel'),
+  'roles' => %w[admin manager user],
+  'scores' => [10, 2, 5, 1000],
+  'last_4_payments' => [
+    { 'amount' => 100, 'currency' => 'USD' },
+    { 'amount' => 200, 'currency' => 'USD' },
+    { 'amount' => 300, 'currency' => 'USD' },
+    { 'amount' => 400, 'currency' => 'USD' }
+  ]
+}.extend(LightMapper).mapping({
+  'source.google.private_pool' => 'private',
+  'user.email' => 'user.email',
+  'user.name' => 'user.name',
+  'roles' => 'user.roles',
+  'scores.max' => 'user.best_score',
+  'last_4_payments.last' => 'payment.last',
+}, keys: :symbol)
+```
+
+result will be: 
+
+```ruby
+{
+  private: true,
+  user: {
+    email: 'pawel@example.com',
+    name: 'Pawel',
+    roles: %w[admin manager user],
+    best_score: 1000,
+  },
+  payment: {
+    last: { 'amount' => 400, 'currency' => 'USD' }
+  }
+}
+```
+
+
+
 ### Mappers selection via pattern matching
 
 ```ruby

@@ -1,4 +1,5 @@
 require 'spec_helper'
+
 class User
   attr_accessor :name, :email, :manager
 
@@ -77,10 +78,10 @@ describe LightMapper do
 
     it 'return correct hash' do
       expect(subject.mapping(mapper, any_keys: true)).to eq(
-        a: original_hash['A'],
-        c: original_hash[:c],
-        'z' => original_hash['b']
-      )
+                                                           a: original_hash['A'],
+                                                           c: original_hash[:c],
+                                                           'z' => original_hash['b']
+                                                         )
     end
 
     describe 'raise KeyError' do
@@ -96,7 +97,7 @@ describe LightMapper do
         expect { subject.mapping(mapper, strict: true, any_keys: true) }.to raise_error(LightMapper::KeyMissing)
       end
     end
-   end
+  end
 
   describe 'more advanced mapping' do
     let(:source) do
@@ -105,7 +106,7 @@ describe LightMapper do
         'user' => User.new(email: 'pawel@example.com', name: 'Pawel'),
         'roles' => %w[admin manager user],
         'mixed' => { users: [User.new(email: 'max@example.com', name: 'Max', manager: true), User.new(email: 'pawel@example.com', name: 'Pawel', manager: false)] },
-        'scores' => [ 10, 2, 5, 1000],
+        'scores' => [10, 2, 5, 1000],
         'last_4_payments' => [
           { 'amount' => 100, 'currency' => 'USD' },
           { 'amount' => 200, 'currency' => 'USD' },
@@ -113,8 +114,8 @@ describe LightMapper do
           { 'amount' => 400, 'currency' => 'USD' }
         ],
         'array' => [
-          [1,2,3],
-          [4,5,6],
+          [1, 2, 3],
+          [4, 5, 6],
           [
             7,
             8,
@@ -125,7 +126,7 @@ describe LightMapper do
     end
 
     context 'with nested hash mapping' do
-      let(:mapping) { {'source.google.search_word' => :word} }
+      let(:mapping) { { 'source.google.search_word' => :word } }
 
       it 'return correct result' do
         expect(source.extend(LightMapper).mapping(mapping)).to eq(word: 'ruby')
@@ -133,7 +134,7 @@ describe LightMapper do
     end
 
     context 'with nested array mapping' do
-      let(:mapping) { {'array.2.2.first' => :result} }
+      let(:mapping) { { 'array.2.2.first' => :result } }
 
       it 'return correct result' do
         expect(source.extend(LightMapper).mapping(mapping)).to eq(result: ':D')
@@ -141,7 +142,7 @@ describe LightMapper do
     end
 
     context 'with nested object mapping' do
-      let(:mapping) { {'user.email' => :result} }
+      let(:mapping) { { 'user.email' => :result } }
 
       it 'return correct result' do
         expect(source.extend(LightMapper).mapping(mapping)).to eq(result: 'pawel@example.com')
@@ -176,42 +177,89 @@ describe LightMapper do
 
       it 'return correct result' do
         expect(source.extend(LightMapper).mapping(mapping, any_keys: true)).to match({
-                                                                    word: 'ruby',
-                                                                    email: 'pawel@example.com',
-                                                                    name: 'Pawel',
-                                                                    final_score: 1017,
-                                                                    first_role: 'admin',
-                                                                    last_role: 'user',
-                                                                    manager_email: 'max@example.com',
-                                                                    manager_name: 'Max',
-                                                                    last_user_name: 'Pawel',
-                                                                    middle_role: 'manager',
-                                                                    quarterly_payment_amount: 400,
-                                                                    smile: ':D'
-                                                                  })
+                                                                                       word: 'ruby',
+                                                                                       email: 'pawel@example.com',
+                                                                                       name: 'Pawel',
+                                                                                       final_score: 1017,
+                                                                                       first_role: 'admin',
+                                                                                       last_role: 'user',
+                                                                                       manager_email: 'max@example.com',
+                                                                                       manager_name: 'Max',
+                                                                                       last_user_name: 'Pawel',
+                                                                                       middle_role: 'manager',
+                                                                                       quarterly_payment_amount: 400,
+                                                                                       smile: ':D'
+                                                                                     })
       end
 
       it 'return correct result base on proper key types' do
         expect(source.extend(LightMapper).mapping(mapping)).to match({
-                                                                    word: 'ruby',
-                                                                    email: 'pawel@example.com',
-                                                                    name: 'Pawel',
-                                                                    final_score: 1017,
-                                                                    first_role: 'admin',
-                                                                    last_role: 'user',
-                                                                    manager_email: 'max@example.com',
-                                                                    manager_name: 'Max',
-                                                                    last_user_name: nil,
-                                                                    middle_role: 'manager',
-                                                                    quarterly_payment_amount: 400,
-                                                                    smile: ':D'
-                                                                  })
+                                                                       word: 'ruby',
+                                                                       email: 'pawel@example.com',
+                                                                       name: 'Pawel',
+                                                                       final_score: 1017,
+                                                                       first_role: 'admin',
+                                                                       last_role: 'user',
+                                                                       manager_email: 'max@example.com',
+                                                                       manager_name: 'Max',
+                                                                       last_user_name: nil,
+                                                                       middle_role: 'manager',
+                                                                       quarterly_payment_amount: 400,
+                                                                       smile: ':D'
+                                                                     })
       end
 
       it 'raise KeyMissing error' do
-        expect { source.extend(LightMapper).mapping({'user.non_existence_method' => :result}, strict: true) }.to raise_error(LightMapper::KeyMissing)
-        expect { source.extend(LightMapper).mapping({'last_4_payments.4' => :result}, strict: true) }.to raise_error(LightMapper::KeyMissing)
-        expect { source.extend(LightMapper).mapping({'source.google.missing_key' => :result}, strict: true) }.to raise_error(LightMapper::KeyMissing)
+        expect { source.extend(LightMapper).mapping({ 'user.non_existence_method' => :result }, strict: true) }.to raise_error(LightMapper::KeyMissing)
+        expect { source.extend(LightMapper).mapping({ 'last_4_payments.4' => :result }, strict: true) }.to raise_error(LightMapper::KeyMissing)
+        expect { source.extend(LightMapper).mapping({ 'source.google.missing_key' => :result }, strict: true) }.to raise_error(LightMapper::KeyMissing)
+      end
+    end
+
+    context 'nested input to nested output' do
+      let(:source) do
+        {
+          'source' => { 'google' => { 'private_pool' => true } },
+          'user' => User.new(email: 'pawel@example.com', name: 'Pawel'),
+          'roles' => %w[admin manager user],
+          'scores' => [10, 2, 5, 1000],
+          'last_4_payments' => [
+            { 'amount' => 100, 'currency' => 'USD' },
+            { 'amount' => 200, 'currency' => 'USD' },
+            { 'amount' => 300, 'currency' => 'USD' },
+            { 'amount' => 400, 'currency' => 'USD' }
+          ]
+        }
+      end
+
+      let(:mapping) do
+        {
+          'source.google.private_pool' => 'private',
+          'user.email' => 'user.email',
+          'user.name' => 'user.name',
+          'roles' => 'user.roles',
+          'scores.max' => 'user.best_score',
+          'last_4_payments.last' => 'payment.last',
+        }
+      end
+
+      it 'return correct result' do
+        expect(source.extend(LightMapper).mapping(mapping, keys: :symbol)).to match({
+                                                                                      private: true,
+                                                                                      user: {
+                                                                                        email: 'pawel@example.com',
+                                                                                        name: 'Pawel',
+                                                                                        roles: %w[admin manager user],
+                                                                                        best_score: 1000,
+                                                                                      },
+                                                                                      payment: {
+                                                                                        last: { 'amount' => 400, 'currency' => 'USD' }
+                                                                                      }
+                                                                                    })
+      end
+
+      it 'raise AlreadyAssignedValue error when key was allready assigned' do
+        expect { source.extend(LightMapper).mapping('source.google.private_pool' => 'private', 'source.google' => 'private') }.to raise_error(LightMapper::AlreadyAssignedValue)
       end
     end
   end
