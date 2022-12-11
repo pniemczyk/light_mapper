@@ -193,7 +193,14 @@ result will be:
 }
 ```
 
+### Support for pushing values to specific key based on key path
 
+```ruby
+{a: 1}.extend(LightMapper).push('b.c', 2, keys: :symbol)
+# result { a: 1, b: { c: 2 } }
+{ a: 1, b: { ab: 1}}.extend(LightMapper).push('b.ab', 2, keys: :symbol, override: true)
+# result { a: 1, b: { ab: 2 } }
+```
 
 ### Mappers selection via pattern matching
 

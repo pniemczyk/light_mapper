@@ -76,7 +76,7 @@ module LightMapper
       end
     end
 
-    def self.push(hash, key, value, keys: :string, build_structure: true)
+    def self.push(hash, key, value, keys: :string, build_structure: true, override: false)
       return hash[key] = value if key.is_a?(Symbol)
 
       path = key.to_s.split('.')
@@ -87,11 +87,11 @@ module LightMapper
 
       path.each_with_index do |k, idx|
         last_idx = idx == path.size - 1
-        raise AlreadyAssignedValue, "Key #{k} already assigned in #{path} for #{hash.inspect} structure" if last_idx && context.key?(k) && !context[k].nil?
-        next context[k] = value if last_idx
+        raise AlreadyAssignedValue, "Key #{k} already assigned in #{path} for #{hash.inspect} structure" if !override && last_idx && context.key?(k) && !context[k].nil?
+        next context[k] = value if last_idx && context.is_a?(Hash)
 
         context.send(:[]=,k, {}) if build_structure && !context.key?(k)
-        context = context.send(:[], k) if context.is_a?(Hash)
+        context.is_a?(Hash) ? context = context.send(:[], k) : break
       end
     end
 
@@ -108,6 +108,11 @@ module LightMapper
 
   def mapping(mappings, opts = {})
     LightMapper.mapping(clone, mappings, opts)
+  end
+
+  def push(key, value, keys: :string, build_structure: true, override: false)
+    LightMapper::Helper.push(self, key, value, keys: keys, build_structure: build_structure, override: override)
+    self
   end
 
   def self.mapping(hash, mappings, opts = {})
