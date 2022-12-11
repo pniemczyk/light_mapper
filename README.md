@@ -200,6 +200,8 @@ result will be:
 # result { a: 1, b: { c: 2 } }
 { a: 1, b: { ab: 1}}.extend(LightMapper).push('b.ab', 2, keys: :symbol, override: true)
 # result { a: 1, b: { ab: 2 } }
+{ a: 1, b: { ab: 1}}.extend(LightMapper).push('b.abc.c', 2, keys: :symbol, build_structure: false)
+# result { a: 1, b: { ab: 1 } } # it's not adding anything because provided key path do not exist
 ```
 
 ### Mappers selection via pattern matching
