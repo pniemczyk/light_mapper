@@ -1,6 +1,6 @@
 # LightMapper
 
-[![Gem Version](https://badge.fury.io/rb/light_mapper.svg)](http://badge.fury.io/rb/light_mapper)
+[![Gem Version](https://badge.fury.io/rb/light_mapper.svg)](https://badge.fury.io/rb/light_mapper)
 [![Build Status](https://travis-ci.org/pniemczyk/light_mapper.svg?branch=master)](https://travis-ci.org/pniemczyk/light_mapper)
 
 This is simple mapper for hash.
